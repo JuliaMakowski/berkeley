@@ -5,42 +5,25 @@ import domain.MessageTypes;
 
 import java.io.IOException;
 import java.net.*;
-import java.time.LocalDateTime;
 
 public class ClientNode extends Thread{
 
     private DatagramSocket socket;
-    private InetAddress address;
-    private String port;
     private String id;
-    private String adelay;
+    private String networkDelay;
     private Clock clock;
 
     private byte[] buf;
 
 
-    public ClientNode(DatagramSocket socket,InetAddress address, String port, String id, String adelay, Clock clock) {
+    public ClientNode(DatagramSocket socket, String id, String networkDelay, Clock clock) {
         this.socket = socket;
-        this.address = address;
-        this.port = port;
         this.id = id;
         this.clock = clock;
-        this.adelay = adelay;
+        this.networkDelay = networkDelay;
     }
 
-    // @Todo Definir o que sera enviado, sugestão - host, time, ptime, adelay - separados ou por virgula ou por -
-    public void sendMessage(String msg) {
-        buf = msg.getBytes();
-        //@Todo Definir porta do server aqui hardcoded ou definir de outro jeito?
-        DatagramPacket packet = new DatagramPacket(buf, buf.length, address, 3000);
-        try {
-            socket.send(packet);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    public void Listener() throws IOException {
+    public void listener() throws IOException {
         MulticastSocket mSocket = new MulticastSocket(5000);
         InetAddress grupo = InetAddress.getByName("230.0.0.1");
         mSocket.joinGroup(grupo);
