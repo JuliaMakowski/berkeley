@@ -16,11 +16,15 @@ public class Clock extends Thread{
         this.time = time;
     }
 
-    private void increase(long ms){
+    public LocalTime getTime() {
+        return time;
+    }
+
+    public void increase(long ms){
         time = time.plus(ms, ChronoUnit.MILLIS);
     }
 
-    private void decrease(long ms){
+    public void decrease(long ms){
         time = time.minus(ms, ChronoUnit.MILLIS);
     }
 
