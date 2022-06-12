@@ -42,11 +42,6 @@ public class ClientNode extends Thread{
                 byte[] msg = request.getBytes(); // mandar SEND_CLOCK;id;time
                 socket.send(new DatagramPacket(msg, msg.length, packet.getSocketAddress()));
             }
-            if (MessageTypes.valueOf(message[0])==MessageTypes.FIX_CLOCK){ //ADJUST_CLOCK;plus|minus;T-ms
-                if (message[1].equals("plus")) clock.increase(Integer.parseInt(message[2]));
-                if (message[1].equals("minus")) clock.decrease(Integer.parseInt(message[2]));
-            }
-
         }
     }
 

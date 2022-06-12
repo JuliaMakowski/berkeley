@@ -21,9 +21,7 @@ public class Client {
         InetAddress address = InetAddress.getByName(host);
         Clock clock = new Clock(Integer.parseInt(clocKDelay), LocalTime.parse(time));
         ClientNode clientNode = new ClientNode(socket, id, networkDelay, clock);
-        IncomingReceiverMessage incomingReceiverMessage = new IncomingReceiverMessage(socket, payload ->{
-
-        });
+        IncomingReceiverMessage incomingReceiverMessage = new IncomingReceiverMessage(socket, new ClientHandlerMessages(socket,clock));
         clientNode.listener();
     }
 }

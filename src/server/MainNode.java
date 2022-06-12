@@ -23,7 +23,7 @@ public class MainNode extends Thread{
     public static void main(String[] args) throws IOException, InterruptedException {
         DatagramSocket socket = new DatagramSocket(3000);
         MainNode node = new MainNode(socket, 3);
-        BerkeleyHandlerMessages handler = new BerkeleyHandlerMessages(socket, 2, new Clock("0", LocalTime.now())); //@TODO JP, ajustar o init do clock.
+        BerkeleyHandlerMessages handler = new BerkeleyHandlerMessages(socket, 2, new Clock(0, LocalTime.now())); //@TODO JP, ajustar o init do clock.
         //Como fazer para saber todos os nodos..
         IncomingReceiverMessage serverReceiver = new IncomingReceiverMessage(socket, handler);
     }
