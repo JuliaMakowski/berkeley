@@ -14,46 +14,35 @@ public class ClientNode extends Thread{
     private InetAddress address;
     private String port;
     private String id;
+    private String adelay;
     private Clock clock;
 
 
     private byte[] buf;
 
 
-    public ClientNode(String host, String port, String id, Clock clock) {
-        try {
-            socket = new DatagramSocket();
-            address = InetAddress.getByName(host);
-            this.port = port;
-            this.id = id;
-            this.clock = clock;
-        } catch (UnknownHostException | SocketException e) {
-            e.printStackTrace();
-        }
+    public ClientNode(DatagramSocket socket,InetAddress address, String port, String id, String adelay, Clock clock) {
+        this.socket = socket;
+        this.address = address;
+        this.port = port;
+        this.id = id;
+        this.clock = clock;
+        this.adelay = adelay;
     }
 
     // @Todo Definir o que sera enviado, sugestão - host, time, ptime, adelay - separados ou por virgula ou por -
-    public String sendMessage(String msg) {
+    public void sendMessage(String msg) {
         buf = msg.getBytes();
         //@Todo Definir porta do server aqui hardcoded ou definir de outro jeito?
-        DatagramPacket packet = new DatagramPacket(buf, buf.length, address, 4445);
+        DatagramPacket packet = new DatagramPacket(buf, buf.length, address, 3000);
         try {
             socket.send(packet);
         } catch (IOException e) {
             e.printStackTrace();
         }
-        packet = new DatagramPacket(buf, buf.length);
-        try {
-            socket.receive(packet);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return new String(
-                packet.getData(), 0, packet.getLength());
     }
 
     public void Listener() throws IOException {
-        DatagramSocket socket = new DatagramSocket(Integer.parseInt(port));
         MulticastSocket mSocket = new MulticastSocket(5000);
         InetAddress grupo = InetAddress.getByName("230.0.0.1");
         mSocket.joinGroup(grupo);
@@ -75,10 +64,6 @@ public class ClientNode extends Thread{
             if (MessageTypes.valueOf(message[0])==MessageTypes.FIX_CLOCK){ //ADJUST_CLOCK;plus|minus;T-ms
                 if (message[1].equals("plus")) clock.increase(Integer.parseInt(message[2]));
                 if (message[1].equals("minus")) clock.decrease(Integer.parseInt(message[2]));
-
-                request = MessageTypes.SEND_CLOCK + ";" +id + ";"+ clock.getTime().toString();
-                byte[] msg = request.getBytes(); // mandar SEND_CLOCK;id;time
-                socket.send(new DatagramPacket(msg, msg.length, packet.getSocketAddress()));
             }
 
         }
