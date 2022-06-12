@@ -29,9 +29,4 @@ public class ClientHandlerMessages implements Consumer<Message> {
 
         }
     }
-
-    @Override
-    public Consumer<Message> andThen(Consumer<? super Message> after) {
-        return null;
-    }
 }
