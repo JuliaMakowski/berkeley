@@ -17,6 +17,10 @@ public class Clock extends Thread{
         return time;
     }
 
+    public long timeOnMs() {
+        return time.toSecondOfDay() * 1000L + time.getNano() / 1000;
+    }
+
     public void increase(long ms){
         time = time.plus(ms, ChronoUnit.MILLIS);
     }
