@@ -6,8 +6,6 @@ import java.time.temporal.TemporalUnit;
 import java.util.concurrent.ThreadLocalRandom;
 
 public class Clock extends Thread{
-
-
     private String delay;
     private LocalTime time;
     public Clock(String delay, LocalTime time){
