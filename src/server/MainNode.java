@@ -1,10 +1,12 @@
 package server;
 
+import domain.Clock;
 import domain.IncomingReceiverMessage;
 import domain.MessageTypes;
 
 import java.io.IOException;
 import java.net.*;
+import java.time.LocalTime;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -21,10 +23,9 @@ public class MainNode extends Thread{
     public static void main(String[] args) throws IOException, InterruptedException {
         DatagramSocket socket = new DatagramSocket(3000);
         MainNode node = new MainNode(socket, 3);
+        BerkeleyHandlerMessages handler = new BerkeleyHandlerMessages(socket, 2, new Clock("0", LocalTime.now())); //@TODO JP, ajustar o init do clock.
         //Como fazer para saber todos os nodos..
-        IncomingReceiverMessage serverReceiver = new IncomingReceiverMessage(socket, payload -> {
-
-        });
+        IncomingReceiverMessage serverReceiver = new IncomingReceiverMessage(socket, handler);
     }
 
     @Override
