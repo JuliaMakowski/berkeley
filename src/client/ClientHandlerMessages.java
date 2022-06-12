@@ -12,11 +12,9 @@ import java.util.Map;
 import java.util.function.Consumer;
 
 public class ClientHandlerMessages implements Consumer<Message> {
-    private DatagramSocket socket;
     private Clock clock;
 
-    public ClientHandlerMessages(DatagramSocket socket, Clock clock) {
-        this.socket = socket;
+    public ClientHandlerMessages(Clock clock) {
         this.clock = clock;
     }
     @Override

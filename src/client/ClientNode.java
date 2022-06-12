@@ -45,11 +45,4 @@ public class ClientNode extends Thread{
         }
     }
 
-    public void close() {
-        socket.close();
-    }
-
-
-
-
 }
