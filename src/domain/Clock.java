@@ -8,10 +8,9 @@ import java.util.concurrent.ThreadLocalRandom;
 public class Clock extends Thread{
 
 
-    private int shift;
-    private int delay;
+    private String delay;
     private LocalTime time;
-    public Clock(int delay, LocalTime time){
+    public Clock(String delay, LocalTime time){
         this.delay = delay;
         this.time = time;
     }
@@ -34,7 +33,7 @@ public class Clock extends Thread{
             try {
                 Thread.sleep(1000);
                 int randomNum = ThreadLocalRandom.current().nextInt(1, 10 + 1);
-                if (randomNum/3==0)Thread.sleep(delay);
+                if (randomNum/3==0)Thread.sleep(Integer.parseInt(delay));
                 increase(1000);
             } catch (InterruptedException e) {
                 e.printStackTrace();

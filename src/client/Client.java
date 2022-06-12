@@ -3,6 +3,7 @@ package client;
 import domain.Clock;
 
 import java.io.IOException;
+import java.time.LocalTime;
 
 public class Client {
     public static void main(String[] args) throws IOException {
@@ -14,7 +15,8 @@ public class Client {
         String adelay = args[5];
 
 
-        ClientNode clientNode = new ClientNode(host,port);
+        Clock clock = new Clock(adelay, LocalTime.parse(time));
+        ClientNode clientNode = new ClientNode(host,port,id, clock);
         clientNode.Listener();
     }
 }
