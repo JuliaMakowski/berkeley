@@ -9,13 +9,11 @@ import java.time.LocalDateTime;
 
 public class ClientNode extends Thread{
 
-
     private DatagramSocket socket;
     private InetAddress address;
     private String port;
     private String id;
     private Clock clock;
-
 
     private byte[] buf;
 
