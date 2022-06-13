@@ -48,7 +48,6 @@ public class BerkeleyAlg {
 
         System.out.println("\n\n");
         return resultMap;
-        //@TODO tem algo aqui, que mesmo com a diferença grande, não ta tendo diferença...
         /*
         java server.MainNode host 10:00:00.000 10 0 0
         java client.Client 4 host 2004 11:00:05.000 0 0
