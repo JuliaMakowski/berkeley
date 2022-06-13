@@ -2,6 +2,7 @@ package server;
 
 import java.net.InetAddress;
 import java.net.SocketAddress;
+import java.util.Objects;
 
 public class NodeReference {
     private final InetAddress address;
@@ -24,5 +25,18 @@ public class NodeReference {
 
     public int getPort() {
         return port;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        NodeReference reference = (NodeReference) o;
+        return getPort() == reference.getPort() && getAddress().equals(reference.getAddress()) && getId().equals(reference.getId());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(getAddress(), getPort(), getId());
     }
 }

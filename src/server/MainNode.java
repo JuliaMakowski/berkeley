@@ -25,7 +25,6 @@ public class MainNode extends Thread {
 
     @Override
     public void run() {
-        int flag = 0;
         while (true) {
             System.out.println("Asking clock to nodes at server time: " + clock.getTime());
             String msg = MessageTypes.ASK_CLOCK.name();
@@ -37,14 +36,7 @@ public class MainNode extends Thread {
                 System.out.println("Will Send packet: " + new String(packet.getData()));
                 socket.send(packet);
                 System.out.println("Will sleep for: " + cycleTime + " seconds ");
-                //if (flag < 2) {
-                    Thread.sleep(cycleTime * 1000);
-                    flag++;
-//                } else {
-//                    System.out.println("WILL DIE");
-//                    Thread.sleep(cycleTime * 1000000000);
-//                }
-
+                Thread.sleep(cycleTime * 1000);
             } catch (Exception e) {
                 e.printStackTrace();
                 throw new RuntimeException(e);
@@ -69,7 +61,7 @@ public class MainNode extends Thread {
         MulticastGroupListener multicastGroupListener = new MulticastGroupListener(message -> {
             if (!(message.getFrom().equals(serverHost) && message.getPort() == serverPort)) {
                 System.out.println("Will increase node number because node: " + message.getFrom() + ":" + message.getPort() + " has connected");
-                berkeley.increaseNodeNumber();
+                berkeley.increaseNodeNumber(message);
             }
         });
         MainNode node = new MainNode(serverClock, Integer.parseInt(cycleTime), socket, berkeley);

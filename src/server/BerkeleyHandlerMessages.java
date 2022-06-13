@@ -10,17 +10,19 @@ import java.net.DatagramSocket;
 import java.time.LocalTime;
 import java.time.temporal.ChronoUnit;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 public class BerkeleyHandlerMessages implements Consumer<Message> {
     private Map<NodeReference, NodeReferenceTime> clockNodes;
+    private Set<NodeReference> connectedNodes;
     private DatagramSocket socket;
     private int processTime;
     private Clock clock;
     private int nodesNumber;
-
     private BerkeleyAlg berkeleyAlg;
     private long timeSent;
 
@@ -31,6 +33,7 @@ public class BerkeleyHandlerMessages implements Consumer<Message> {
         this.clock = clock;
         this.timeSent = 0;
         this.berkeleyAlg = berkeleyAlg;
+        this.connectedNodes = new HashSet<>();
         this.processTime = processTime;
     }
 
@@ -38,7 +41,11 @@ public class BerkeleyHandlerMessages implements Consumer<Message> {
         this.timeSent = time;
     }
 
-    public void increaseNodeNumber() {
+    public void increaseNodeNumber(Message message) {
+        String[] messageParts = message.getPayload().split(";");
+        String processId = messageParts[1];
+        NodeReference nodeReference = new NodeReference(message.getFrom(), message.getPort(), processId);
+        connectedNodes.add(nodeReference);
         nodesNumber++;
     }
 
@@ -46,13 +53,25 @@ public class BerkeleyHandlerMessages implements Consumer<Message> {
     public void accept(Message message) {
         String payload = message.getPayload();
         String[] messageParts = payload.split(";");
-        System.out.println("Received message from process: " + messageParts[1] + " : " + payload);
+        String processId = messageParts[1];
+        System.out.println("Received message from process: " + processId + " : " + payload);
+        //@Todo fazer uma mapa pra guardar quem falta, fazer um loop de 3 vezes...
+        //@Todo usar o send do main pra isso, dizer que enviou, usar o setTimeSent
+        //@Todo "Aguardar" 3 vezes.. se não remover do nodo.
+        //@Todo no setTimeSet, popular um Map<String, Long> com o id do processo e o numero de vezes.
+        //@Todo caso mapa ja exista, aumentar o valor em 1.
+        //@Todo nesse carinho aqui em baixo, assim que ficar o clockNodes.put ou se já conter na lista, remover a chave
+        //@Todo fazer um if aqui, caso o valor chegar em 3, remover do connected do mesmo id e diminuir o nodesNumber
+        //@Todo por fim executar o cleanMapAndExecute
+        //@Todo da pra fazer essa validação antes de executar o if do cleanMapAndExecute
         if (MessageTypes.SEND_CLOCK.name().equals(messageParts[0])) {
-            NodeReference reference = new NodeReference(message.getFrom(), message.getPort(), messageParts[1]);
+            NodeReference reference = new NodeReference(message.getFrom(), message.getPort(), processId);
             NodeReferenceTime referenceTime = new NodeReferenceTime(LocalTime.parse(messageParts[2]), clock.timeOnMs());
-            clockNodes.put(reference, referenceTime);
+            if (!connectedNodes.contains(reference)) {
+                clockNodes.put(reference, referenceTime);
+            }
         }
-        if (clockNodes.size() >= nodesNumber) {
+        if (clockNodes.size() == nodesNumber) {
             cleanMapAndExecute();
         }
     }
