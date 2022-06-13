@@ -4,7 +4,6 @@ import domain.Clock;
 import domain.Message;
 import domain.MessageTypes;
 
-import java.beans.JavaBean;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
@@ -20,14 +19,17 @@ public class BerkeleyHandlerMessages implements Consumer<Message> {
     private int processTime;
     private Clock clock;
     private int nodesNumber;
+
+    private BerkeleyAlg berkeleyAlg;
     private long timeSent;
 
-    public BerkeleyHandlerMessages(DatagramSocket socket, int startNodesNumber, Clock clock, int processTime) {
+    public BerkeleyHandlerMessages(DatagramSocket socket, int startNodesNumber, Clock clock, int processTime, BerkeleyAlg berkeleyAlg) {
         this.clockNodes = new HashMap<>();
         this.socket = socket;
         this.nodesNumber = startNodesNumber;
         this.clock = clock;
         this.timeSent = 0;
+        this.berkeleyAlg = berkeleyAlg;
         this.processTime = processTime;
     }
 
@@ -56,32 +58,25 @@ public class BerkeleyHandlerMessages implements Consumer<Message> {
 
     private void cleanMapAndExecute() {
         Map<NodeReference, NodeReferenceTime> nodes = new HashMap<>(this.clockNodes);
-        long currentTime = clock.timeOnMs();
         this.clockNodes.clear();
-        long summedTimes = nodes.values().stream()
-                .map(NodeReferenceTime::getNodeTime)
-                .map(this::getTimeOnMs)
-                .reduce(currentTime, Long::sum);
-        long average = Math.round(summedTimes * 1.0 / nodes.size());
-        long avgFiltered = nodes.values().stream()
-                .map(NodeReferenceTime::getNodeTime)
-                .map(this::getTimeOnMs)
-                .filter(time -> is10SecondsApart(average, time))
-                .reduce(is10SecondsApart(average, currentTime) ? currentTime : 0, Long::sum);
-        Map<NodeReference, Long> valuesToChange = nodes.entrySet().stream()
-                .collect(Collectors.toMap(Map.Entry::getKey, e -> {
-                    NodeReferenceTime referenceTime = e.getValue();
-                    long difference = avgFiltered - getTimeOnMs(referenceTime.getNodeTime());
-                    long halfOfRtt = (timeSent - referenceTime.getReceivedTime()) / 2;
-                    return difference + halfOfRtt + processTime;
-                }));
+        Map<String, NodeReferenceTime> nodeReferenceTimeMap = nodes.entrySet()
+                .stream().collect(Collectors.toMap(e -> e.getKey().getId(), Map.Entry::getValue));
+        nodeReferenceTimeMap.put("SERVER", new NodeReferenceTime(clock.getTime(), 0L));
+        Map<String, Long> results = berkeleyAlg.runAlg(nodeReferenceTimeMap, timeSent, processTime);
         try {
             Thread.sleep(processTime);
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
-        changeCurrent(currentTime, avgFiltered);
-        valuesToChange.forEach(this::adjustClock);
+        results.forEach((key, value) -> {
+            if (key.equals("SERVER")) {
+                changeCurrent(value);
+            } else {
+                NodeReference reference = nodes.keySet().stream().filter(it -> it.getId().equals(key))
+                        .findFirst().get();
+                adjustClock(reference, value);
+            }
+        });
     }
 
     private void adjustClock(NodeReference nodeReference, Long time) {
@@ -97,22 +92,11 @@ public class BerkeleyHandlerMessages implements Consumer<Message> {
         }
     }
 
-    private void changeCurrent(long currentTime, long avgFiltered) {
-        long difference = avgFiltered - currentTime;
-        if (difference < 0) {
-            clock.decrease(Math.abs(difference));
+    private void changeCurrent(long toChange) {
+        if (toChange < 0) {
+            clock.decrease(Math.abs(toChange));
         } else {
-            clock.increase(Math.abs(difference));
+            clock.increase(Math.abs(toChange));
         }
-    }
-
-    private boolean is10SecondsApart(long average, Long time) {
-        return time < average + 10000 || time > average - 10000;
-    }
-    //b) Offset = Avg_1 - P_timestamp + (RTT / 2) <- COmo eu descubro o RTT
-
-
-    private long getTimeOnMs(LocalTime time) {
-        return time.toSecondOfDay() * 1000L + time.getNano() / 1000;
     }
 }

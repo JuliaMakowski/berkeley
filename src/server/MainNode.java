@@ -8,8 +8,6 @@ import domain.MulticastGroupListener;
 import java.io.IOException;
 import java.net.*;
 import java.time.LocalTime;
-import java.util.HashMap;
-import java.util.Map;
 
 public class MainNode extends Thread {
     private DatagramSocket socket;
@@ -59,7 +57,7 @@ public class MainNode extends Thread {
         DatagramSocket socket = new DatagramSocket(serverPort, serverHost);
         Clock serverClock = new Clock(Integer.parseInt(clockDelay), LocalTime.parse(time));
         serverClock.start();
-        BerkeleyHandlerMessages berkeley = new BerkeleyHandlerMessages(socket, 0, serverClock, Integer.parseInt(processTime));
+        BerkeleyHandlerMessages berkeley = new BerkeleyHandlerMessages(socket, 0, serverClock, Integer.parseInt(processTime), new BerkeleyAlg());
         MulticastGroupListener multicastGroupListener = new MulticastGroupListener(message -> {
             if (!(message.getFrom().equals(serverHost) && message.getPort() == serverPort)) {
                 berkeley.increaseNodeNumber();

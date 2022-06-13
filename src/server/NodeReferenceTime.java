@@ -18,4 +18,8 @@ public class NodeReferenceTime {
     public long getReceivedTime() {
         return receivedTime;
     }
+
+    public void setNodeTime(LocalTime nodeTime) {
+        this.nodeTime = nodeTime;
+    }
 }
