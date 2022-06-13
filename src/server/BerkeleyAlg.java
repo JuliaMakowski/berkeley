@@ -40,7 +40,7 @@ public class BerkeleyAlg {
                     System.out.println("node: *" + e.getKey() +  "* NodeTime: (" + nodeTime  + ") AVG: (" + toFormattedHour(avgFiltered) + ")");
                     System.out.println("node: *" + e.getKey() +  "* NodeTime: (" + nodeTimeMs  + ") AVG: (" + avgFiltered + ") RTT: (" + rtt + ")");
                     long difference = avgFiltered - nodeTimeMs;
-                    long halfOfRtt = (timeSent - referenceTime.getReceivedTime()) / 2;
+                    long halfOfRtt = rtt / 2;
                     long result = difference + halfOfRtt + processTime;
                     System.out.println("Change to: " + result + "  to be: from: " + nodeTime + " to: " + operate(nodeTime, result));
                     System.out.println("-------------------------------------------------------------------");
