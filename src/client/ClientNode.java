@@ -39,7 +39,9 @@ public class ClientNode implements Consumer<Message> {
             if (MessageTypes.ASK_CLOCK.name().equals(message[0])) {
                 String request = MessageTypes.SEND_CLOCK + ";" + id + ";" + clock.getTime().toString();
                 byte[] msg = request.getBytes();
+                System.out.println("Problema de rede.. vou sleep por " + networkDelay + " ms");
                 Thread.sleep(networkDelay);
+                System.out.println("enviando pacote de resposta ao servidor...");
                 socket.send(new DatagramPacket(msg, msg.length, receivedMessage.getFrom(), receivedMessage.getPort()));
             }
         } catch (Exception e) {

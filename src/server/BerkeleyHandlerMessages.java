@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.time.LocalTime;
+import java.time.temporal.ChronoUnit;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Consumer;
@@ -61,22 +62,28 @@ public class BerkeleyHandlerMessages implements Consumer<Message> {
         this.clockNodes.clear();
         Map<String, NodeReferenceTime> nodeReferenceTimeMap = nodes.entrySet()
                 .stream().collect(Collectors.toMap(e -> e.getKey().getId(), Map.Entry::getValue));
-        nodeReferenceTimeMap.put("SERVER", new NodeReferenceTime(clock.getTime(), 0L));
+        nodeReferenceTimeMap.put("SERVER", new NodeReferenceTime(clock.getTime(), timeSent));
         Map<String, Long> results = berkeleyAlg.runAlg(nodeReferenceTimeMap, timeSent, processTime);
-        try {
-            Thread.sleep(processTime);
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        }
         results.forEach((key, value) -> {
             if (key.equals("SERVER")) {
                 changeCurrent(value);
             } else {
+                NodeReferenceTime referenceTime = nodeReferenceTimeMap.get(key);
+                LocalTime localTime = calculateNewTime(referenceTime.getNodeTime(), value);
+                System.out.println("node: " + key + " has to change clock from: " + referenceTime.getNodeTime() + " to: " + localTime);
                 NodeReference reference = nodes.keySet().stream().filter(it -> it.getId().equals(key))
                         .findFirst().get();
                 adjustClock(reference, value);
             }
         });
+    }
+
+    private LocalTime calculateNewTime(LocalTime referenceTime, Long value) {
+        if (value < 0) {
+            return referenceTime.minus(Math.abs(value), ChronoUnit.MILLIS);
+        } else {
+            return referenceTime.plus(Math.abs(value), ChronoUnit.MILLIS);
+        }
     }
 
     private void adjustClock(NodeReference nodeReference, Long time) {

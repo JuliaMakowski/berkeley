@@ -22,12 +22,12 @@ public class Clock extends Thread{
     }
 
     public void increase(long ms){
-       // System.out.println("Increasing clock in: " + ms + " milliseconds");
+       System.out.println("Increasing clock in: " + ms + " milliseconds");
         time = time.plus(ms, ChronoUnit.MILLIS);
     }
 
     public void decrease(long ms){
-       // System.out.println("Decreasing clock in: " + ms + " milliseconds");
+       System.out.println("Decreasing clock in: " + ms + " milliseconds");
         time = time.minus(ms, ChronoUnit.MILLIS);
     }
 
@@ -41,7 +41,7 @@ public class Clock extends Thread{
                 if (randomNum % 3==0){
                     Thread.sleep((long) delay);
                 }
-                increase(1000);
+                time = time.plus(1000, ChronoUnit.MILLIS);
                System.out.println("Current Clock: " + time);
             } catch (InterruptedException e) {
                 e.printStackTrace();

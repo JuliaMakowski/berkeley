@@ -7,6 +7,7 @@ import java.util.stream.Collectors;
 
 public class BerkeleyAlg {
     public Map<String, Long> runAlg(Map<String, NodeReferenceTime> nodeReferenceTimeMap, long timeSent, long processTime) {
+        long mainServerTime = getTimeOnMs(nodeReferenceTimeMap.get("SERVER").getNodeTime());
         long summedTimes = nodeReferenceTimeMap.values()
                 .stream()
                 .map(NodeReferenceTime::getNodeTime)
@@ -20,6 +21,7 @@ public class BerkeleyAlg {
                 .filter(time -> is10SecondsApart(average, time))
                 .collect(Collectors.toList());
 
+        if (filteredValues.size() == 0) filteredValues.add(mainServerTime);
         long sumFiltered = filteredValues.stream().reduce(0L, Long::sum);
         long avgFiltered = Math.round(sumFiltered * 1.0 / filteredValues.size());
         return nodeReferenceTimeMap.entrySet().stream()
@@ -29,10 +31,11 @@ public class BerkeleyAlg {
                     long halfOfRtt = (timeSent - referenceTime.getReceivedTime()) / 2;
                     return difference + halfOfRtt + processTime;
                 }));
+        //@TODO tem algo aqui, que mesmo com a diferença grande, não ta tendo diferença...
     }
 
     private boolean is10SecondsApart(long average, Long time) {
-        return time < average + 5000 || time > average - 5000;
+        return (average + 5000) > time && time > (average - 5000);
     }
     //b) Offset = Avg_1 - P_timestamp + (RTT / 2) <- COmo eu descubro o RTT
 
