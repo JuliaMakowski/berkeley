@@ -26,15 +26,14 @@ public class MainNode extends Thread {
     @Override
     public void run() {
         while (true) {
-            System.out.println("Asking clock to nodes at server time: " + clock.getTime());
             String msg = MessageTypes.ASK_CLOCK.name();
             try {
                 InetAddress multiCastAddress = InetAddress.getByName("230.0.0.1");
-                berkeley.setTimeSent(clock.timeOnMs());
                 byte[] byteMsg = msg.getBytes();
                 DatagramPacket packet = new DatagramPacket(byteMsg, byteMsg.length, multiCastAddress, 5000);
                 System.out.println("Will Send packet: " + new String(packet.getData()));
                 socket.send(packet);
+                berkeley.setTimeSent(clock.timeOnMs());
                 System.out.println("Will sleep for: " + cycleTime + " seconds ");
                 Thread.sleep(cycleTime * 1000);
             } catch (Exception e) {

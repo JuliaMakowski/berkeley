@@ -9,7 +9,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 public class BerkeleyAlg {
-    public Map<String, Long> runAlg(Map<String, NodeReferenceTime> nodeReferenceTimeMap, long timeSent, long processTime) {
+    public Map<String, Long> runAlg(Map<String, NodeReferenceTime> nodeReferenceTimeMap, long processTime) {
         long mainServerTime = Clock.timeToMs(nodeReferenceTimeMap.get("SERVER").getNodeTime());
         long summedTimes = nodeReferenceTimeMap.values()
                 .stream()
@@ -18,7 +18,6 @@ public class BerkeleyAlg {
                 .reduce(0L, Long::sum);
 
         long average = Math.round(summedTimes * 1.0 / nodeReferenceTimeMap.size());
-        System.out.println(" FIRST Average time is: " + toFormattedHour(average));
         List<Long> filteredValues = nodeReferenceTimeMap.values().stream()
                 .map(NodeReferenceTime::getNodeTime)
                 .peek(it -> System.out.println("All hours: " + it))
@@ -29,19 +28,18 @@ public class BerkeleyAlg {
         if (filteredValues.size() == 0) filteredValues.add(mainServerTime);
         long sumFiltered = filteredValues.stream().reduce(0L, Long::sum);
         long avgFiltered = Math.round(sumFiltered * 1.0 / filteredValues.size());
-        System.out.println(" SECOND Average time is: " + toFormattedHour(avgFiltered));
         System.out.println("\n\n");
         Map<String, Long> resultMap = nodeReferenceTimeMap.entrySet().stream()
                 .collect(Collectors.toMap(Map.Entry::getKey, e -> {
                     NodeReferenceTime referenceTime = e.getValue();
                     LocalTime nodeTime = referenceTime.getNodeTime();
                     long nodeTimeMs = Clock.timeToMs(nodeTime, true);
-                    long rtt = timeSent - referenceTime.getReceivedTime();
-                    System.out.println("node: *" + e.getKey() +  "* NodeTime: (" + nodeTime  + ") AVG: (" + toFormattedHour(avgFiltered) + ")");
-                    System.out.println("node: *" + e.getKey() +  "* NodeTime: (" + nodeTimeMs  + ") AVG: (" + avgFiltered + ") RTT: (" + rtt + ")");
+                    System.out.println("node: *" + e.getKey() +  "* NodeTime: (" + nodeTime  + ") AVG: (" + Clock.toFormattedHour(avgFiltered) + ") RTT: " + referenceTime.getRTT());
+                    System.out.println("node: *" + e.getKey() +  "* NodeTime: (" + nodeTimeMs  + ") AVG: (" + avgFiltered + ")");
                     long difference = avgFiltered - nodeTimeMs;
-                    long halfOfRtt = rtt / 2;
+                    long halfOfRtt = referenceTime.getRTT() / 2;
                     long result = difference + halfOfRtt + processTime;
+                    System.out.println("Difference: " + difference + " halfOFRTT: " + halfOfRtt + " processTime: " + processTime);
                     System.out.println("Change to: " + result + "  to be: from: " + nodeTime + " to: " + operate(nodeTime, result));
                     System.out.println("-------------------------------------------------------------------");
                     return result;
@@ -58,29 +56,8 @@ public class BerkeleyAlg {
          */
     }
 
-    public static void main(String[] args) {
-        BerkeleyAlg berkeleyAlg = new BerkeleyAlg();
-        LocalTime time = LocalTime.of(9,52,26);
-        time = time.plus(500, ChronoUnit.MILLIS);
-        LocalTime serverTime = LocalTime.of(10,0,46);
-
-        long timeMs = Clock.timeToMs(time);
-        long serverTimeMs = Clock.timeToMs(serverTime);
-
-        System.out.println("time: " + time  +  " ms: " + timeMs);
-        System.out.println("ServerTime: " + serverTime  +  " ms: " + serverTimeMs);
-
-    }
     private boolean is10SecondsApart(long average, Long time) {
         return (average + 5000) > time && time > (average - 5000);
-    }
-
-    private String toFormattedHour(long timeInMs) {
-        long seconds = timeInMs / 1000;
-        long HH = seconds / 3600;
-        long MM = (seconds % 3600) / 60;
-        long SS = seconds % 60;
-        return HH + ":" + MM + ":" + SS + "." + timeInMs;
     }
 
     private LocalTime operate(LocalTime toChange, long howMuch) {

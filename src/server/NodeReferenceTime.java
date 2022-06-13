@@ -4,19 +4,19 @@ import java.time.LocalTime;
 
 public class NodeReferenceTime {
     private LocalTime nodeTime;
-    private long receivedTime;
+    private long rtt;
 
     public NodeReferenceTime(LocalTime nodeTime, long rtt) {
         this.nodeTime = nodeTime;
-        this.receivedTime = rtt;
+        this.rtt = rtt;
     }
 
     public LocalTime getNodeTime() {
         return nodeTime;
     }
 
-    public long getReceivedTime() {
-        return receivedTime;
+    public long getRTT() {
+        return rtt;
     }
 
     public void setNodeTime(LocalTime nodeTime) {

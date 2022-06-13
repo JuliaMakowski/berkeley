@@ -38,6 +38,7 @@ public class BerkeleyHandlerMessages implements Consumer<Message> {
     }
 
     public void setTimeSent(long time) {
+        System.out.println("Setting sendTime to: " + time + " ms -> " + Clock.toFormattedHour(time));
         this.timeSent = time;
     }
 
@@ -57,7 +58,8 @@ public class BerkeleyHandlerMessages implements Consumer<Message> {
         System.out.println("Received message from process: " + processId + " : " + payload);
         if (MessageTypes.SEND_CLOCK.name().equals(messageParts[0])) {
             NodeReference reference = new NodeReference(message.getFrom(), message.getPort(), processId);
-            NodeReferenceTime referenceTime = new NodeReferenceTime(LocalTime.parse(messageParts[2]), clock.timeOnMs());
+            long rtt = clock.timeOnMs() - timeSent;
+            NodeReferenceTime referenceTime = new NodeReferenceTime(LocalTime.parse(messageParts[2]), rtt);
             clockNodes.put(reference, referenceTime);
         }
         if (clockNodes.size() >= nodesNumber) {
@@ -70,8 +72,8 @@ public class BerkeleyHandlerMessages implements Consumer<Message> {
         this.clockNodes.clear();
         Map<String, NodeReferenceTime> nodeReferenceTimeMap = nodes.entrySet()
                 .stream().collect(Collectors.toMap(e -> e.getKey().getId(), Map.Entry::getValue));
-        nodeReferenceTimeMap.put("SERVER", new NodeReferenceTime(clock.getTime(), timeSent));
-        Map<String, Long> results = berkeleyAlg.runAlg(nodeReferenceTimeMap, timeSent, processTime);
+        nodeReferenceTimeMap.put("SERVER", new NodeReferenceTime(clock.getTime(), 0));
+        Map<String, Long> results = berkeleyAlg.runAlg(nodeReferenceTimeMap, processTime);
         results.forEach((key, value) -> {
             if (key.equals("SERVER")) {
                 changeCurrent(value);

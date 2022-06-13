@@ -25,6 +25,14 @@ public class Clock extends Thread {
         return result;
     }
 
+    public static String toFormattedHour(long timeInMs) {
+        long seconds = timeInMs / 1000;
+        long HH = seconds / 3600;
+        long MM = (seconds % 3600) / 60;
+        long SS = seconds % 60;
+        return HH + ":" + MM + ":" + SS + "." + timeInMs % 1000;
+    }
+
     public static long timeToMs(LocalTime time) {
         return timeToMs(time, false);
     }
@@ -51,16 +59,20 @@ public class Clock extends Thread {
     @Override
     public void run() {
         System.out.println("Starting clock at time: " + time);
+        int counter = 0;
         while (true) {
             try {
                 Thread.sleep(1000);
                 int randomNum = ThreadLocalRandom.current().nextInt(1, 10);
                 if (randomNum % 3 == 0) {
-                    System.out.println("Sleeping for " + delay + "ms");
                     Thread.sleep((long) delay);
                 }
                 time = time.plus(1000, ChronoUnit.MILLIS);
-                System.out.println("Current Clock: " + time);
+               // if (counter == 1000 ) {
+                    System.out.println("Current Clock: " + time);
+                  //  counter = 0;
+                //}
+                //counter++;
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
