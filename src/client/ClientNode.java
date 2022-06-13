@@ -41,7 +41,7 @@ public class ClientNode extends Thread{
         DatagramPacket packet = new DatagramPacket(entrada, entrada.length);
 
         while (true) {
-            System.out.println("Wainting");
+            System.out.println("Waiting");
             mSocket.receive(packet);
             System.out.println("received");
             String recebido = new String(packet.getData(), 0, packet.getLength()); //@Todo aqui tambem
