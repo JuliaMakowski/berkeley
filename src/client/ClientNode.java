@@ -23,13 +23,26 @@ public class ClientNode extends Thread{
         this.networkDelay = networkDelay;
     }
 
+
+    public void send() throws IOException{
+        byte[] entrada = new byte[1024];
+        InetAddress multiCastAddress = InetAddress.getByName("230.0.0.1");
+        String req = "client_node_up;"+id;
+        byte [] ip = req.getBytes();
+
+        DatagramPacket packet = new DatagramPacket(ip, ip.length, multiCastAddress,5000);
+
+        socket.send(packet);
+    }
+
     public void listener() throws IOException {
         MulticastSocket mSocket = new MulticastSocket(5000);
         InetAddress grupo = InetAddress.getByName("230.0.0.1");
         mSocket.joinGroup(grupo);
+        byte[] entrada = new byte[1024];
+        DatagramPacket packet = new DatagramPacket(entrada, entrada.length);
+
         while (true) {
-            byte[] entrada = new byte[1024];
-            DatagramPacket packet = new DatagramPacket(entrada, entrada.length);
             System.out.println("Wainting");
             mSocket.receive(packet);
             System.out.println("received");

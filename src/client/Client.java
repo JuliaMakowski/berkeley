@@ -20,7 +20,9 @@ public class Client {
         InetAddress address = InetAddress.getByName(host);
         DatagramSocket socket = new DatagramSocket(Integer.parseInt(port), address);
         Clock clock = new Clock(Integer.parseInt(clocKDelay), LocalTime.parse(time));
+        clock.start();
         ClientNode clientNode = new ClientNode(socket, id, networkDelay, clock);
+        clientNode.send();
         IncomingReceiverMessage incomingReceiverMessage = new IncomingReceiverMessage(socket, new ClientHandlerMessages(clock));
         incomingReceiverMessage.start();
         clientNode.listener();
