@@ -22,7 +22,7 @@ public class Client {
         Clock clock = new Clock(Integer.parseInt(clocKDelay), LocalTime.parse(time));
         clock.start();
         ClientNode clientNode = new ClientNode(socket, id, networkDelay, clock);
-        clientNode.send();
+        clientNode.connect();
         IncomingReceiverMessage incomingReceiverMessage = new IncomingReceiverMessage(socket, new ClientHandlerMessages(clock));
         incomingReceiverMessage.start();
         clientNode.listener();

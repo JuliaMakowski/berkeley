@@ -42,13 +42,12 @@ public class MainNode extends Thread{
         }
     }
 
-    public static void main(String[] args) throws IOException, InterruptedException {
+    public static void main(String[] args) throws IOException {
         DatagramSocket socket = new DatagramSocket(3000);
         Clock serverClock = new Clock(0, LocalTime.now());
         serverClock.start();
-        BerkeleyHandlerMessages handler = new BerkeleyHandlerMessages(socket, 2, serverClock);
+        BerkeleyHandlerMessages handler = new BerkeleyHandlerMessages(socket, 2, serverClock, 2);
         MainNode node = new MainNode(serverClock, socket, 3, handler);
-        //Como fazer para saber todos os nodos..
         IncomingReceiverMessage serverReceiver = new IncomingReceiverMessage(socket, handler);
         serverReceiver.start();
         node.start();

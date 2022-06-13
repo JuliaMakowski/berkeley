@@ -24,14 +24,12 @@ public class ClientNode extends Thread{
     }
 
 
-    public void send() throws IOException{
+    public void connect() throws IOException{
         byte[] entrada = new byte[1024];
         InetAddress multiCastAddress = InetAddress.getByName("230.0.0.1");
         String req = "client_node_up;"+id;
         byte [] ip = req.getBytes();
-
         DatagramPacket packet = new DatagramPacket(ip, ip.length, multiCastAddress,5000);
-
         socket.send(packet);
     }
 
@@ -46,13 +44,13 @@ public class ClientNode extends Thread{
             System.out.println("Wainting");
             mSocket.receive(packet);
             System.out.println("received");
-            String recebido = new String(packet.getData(), 0, packet.getLength()); // validar tipo de mensagem
+            String recebido = new String(packet.getData(), 0, packet.getLength());
             String [] message = recebido.split(";");
             System.out.println("received: " + recebido + " from: " + packet.getSocketAddress());
             String request = "";
             if (MessageTypes.valueOf(message[0])==MessageTypes.ASK_CLOCK) {
                 request = MessageTypes.SEND_CLOCK + ";" +id + ";"+ clock.getTime().toString();
-                byte[] msg = request.getBytes(); // mandar SEND_CLOCK;id;time
+                byte[] msg = request.getBytes();
                 socket.send(new DatagramPacket(msg, msg.length, packet.getSocketAddress()));
             }
         }
