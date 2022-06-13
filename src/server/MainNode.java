@@ -12,15 +12,13 @@ import java.util.Map;
 
 public class MainNode extends Thread{
     private DatagramSocket socket ;
-    private int nodesNumber;
     private Clock clock;
     private BerkeleyHandlerMessages berkeley;
 
 
-    public MainNode(Clock clock, DatagramSocket socket, int nodesNumber, BerkeleyHandlerMessages handlerMessages) {
+    public MainNode(Clock clock, DatagramSocket socket, BerkeleyHandlerMessages handlerMessages) {
         this.socket = socket;
         this.clock = clock;
-        this.nodesNumber = nodesNumber;
         this.berkeley = handlerMessages;
     }
 
@@ -47,7 +45,7 @@ public class MainNode extends Thread{
         Clock serverClock = new Clock(0, LocalTime.now());
         serverClock.start();
         BerkeleyHandlerMessages handler = new BerkeleyHandlerMessages(socket, 2, serverClock, 2);
-        MainNode node = new MainNode(serverClock, socket, 3, handler);
+        MainNode node = new MainNode(serverClock, socket, handler);
         IncomingReceiverMessage serverReceiver = new IncomingReceiverMessage(socket, handler);
         serverReceiver.start();
         node.start();

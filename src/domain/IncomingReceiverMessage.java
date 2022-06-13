@@ -23,7 +23,6 @@ public class IncomingReceiverMessage extends Thread {
                 System.out.println("Will wait");
                 socket.receive(packet);
                 String payload = new String(packet.getData(), 0, packet.getData().length); // TODO Ju, faz um crop dos elementos null <- ta vindo sujeira aqui...
-                System.out.println("Received back from: " + packet.getSocketAddress() + " the ack " + new String(packet.getData(), 0, packet.getData().length));
                 handler.accept(new Message(packet.getSocketAddress(), payload));
             } catch (IOException e) {
                 throw new RuntimeException(e);
