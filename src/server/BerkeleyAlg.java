@@ -32,6 +32,12 @@ public class BerkeleyAlg {
                     return difference + halfOfRtt + processTime;
                 }));
         //@TODO tem algo aqui, que mesmo com a diferença grande, não ta tendo diferença...
+        /*
+        java client.Client 4 host 2004 11:00:05.000 0 0
+        java client.Client 2 host 2002 10:00:05.000 0 0
+        java client.Client 1 host 2001 10:00:05.000 0 0
+        java client.Client 3 host 2000 10:00:05.000 0 0
+         */
     }
 
     private boolean is10SecondsApart(long average, Long time) {
