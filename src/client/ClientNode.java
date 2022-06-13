@@ -20,6 +20,7 @@ public class ClientNode implements Consumer<Message> {
         this.socket = socket;
         this.id = id;
         this.clock = clock;
+        System.out.println("NETWORK DELAY: " + networkDelay);
         this.networkDelay = networkDelay;
     }
 

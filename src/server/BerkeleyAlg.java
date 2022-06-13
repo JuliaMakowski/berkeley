@@ -36,8 +36,9 @@ public class BerkeleyAlg {
                     NodeReferenceTime referenceTime = e.getValue();
                     LocalTime nodeTime = referenceTime.getNodeTime();
                     long nodeTimeMs = Clock.timeToMs(nodeTime, true);
+                    long rtt = timeSent - referenceTime.getReceivedTime();
                     System.out.println("node: *" + e.getKey() +  "* NodeTime: (" + nodeTime  + ") AVG: (" + toFormattedHour(avgFiltered) + ")");
-                    System.out.println("node: *" + e.getKey() +  "* NodeTime: (" + nodeTimeMs  + ") AVG: (" + avgFiltered + ")");
+                    System.out.println("node: *" + e.getKey() +  "* NodeTime: (" + nodeTimeMs  + ") AVG: (" + avgFiltered + ") RTT: (" + rtt + ")");
                     long difference = avgFiltered - nodeTimeMs;
                     long halfOfRtt = (timeSent - referenceTime.getReceivedTime()) / 2;
                     long result = difference + halfOfRtt + processTime;
