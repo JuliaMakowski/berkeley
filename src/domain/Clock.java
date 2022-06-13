@@ -56,6 +56,7 @@ public class Clock extends Thread {
                 Thread.sleep(1000);
                 int randomNum = ThreadLocalRandom.current().nextInt(1, 10);
                 if (randomNum % 3 == 0) {
+                    System.out.println("Sleeping for " + delay + "ms");
                     Thread.sleep((long) delay);
                 }
                 time = time.plus(1000, ChronoUnit.MILLIS);
