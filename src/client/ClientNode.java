@@ -44,7 +44,7 @@ public class ClientNode extends Thread{
             System.out.println("Wainting");
             mSocket.receive(packet);
             System.out.println("received");
-            String recebido = new String(packet.getData(), 0, packet.getLength());
+            String recebido = new String(packet.getData(), 0, packet.getLength()); //@Todo aqui tambem
             String [] message = recebido.split(";");
             System.out.println("received: " + recebido + " from: " + packet.getSocketAddress());
             String request = "";
