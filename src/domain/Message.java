@@ -1,17 +1,24 @@
 package domain;
 
+import java.net.InetAddress;
 import java.net.SocketAddress;
 
 public class Message {
-    private final SocketAddress from;
+    private final InetAddress from;
+    private final int port;
     private final String payload;
 
-    public Message(SocketAddress from, String payload) {
+    public Message(InetAddress from, int port, String payload) {
         this.from = from;
+        this.port = port;
         this.payload = payload;
     }
 
-    public SocketAddress getFrom() {
+    public int getPort() {
+        return port;
+    }
+
+    public InetAddress getFrom() {
         return from;
     }
 

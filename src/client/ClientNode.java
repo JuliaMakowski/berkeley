@@ -1,22 +1,22 @@
 package client;
 
 import domain.Clock;
+import domain.Message;
 import domain.MessageTypes;
 
 import java.io.IOException;
 import java.net.*;
+import java.util.function.Consumer;
 
-public class ClientNode extends Thread{
+public class ClientNode implements Consumer<Message> {
 
     private DatagramSocket socket;
     private String id;
-    private String networkDelay;
+    private long networkDelay;
     private Clock clock;
 
-    private byte[] buf;
 
-
-    public ClientNode(DatagramSocket socket, String id, String networkDelay, Clock clock) {
+    public ClientNode(DatagramSocket socket, String id, long networkDelay, Clock clock) {
         this.socket = socket;
         this.id = id;
         this.clock = clock;
@@ -25,7 +25,6 @@ public class ClientNode extends Thread{
 
 
     public void connect() throws IOException{
-        byte[] entrada = new byte[1024];
         InetAddress multiCastAddress = InetAddress.getByName("230.0.0.1");
         String req = "client_node_up;"+id;
         byte [] ip = req.getBytes();
@@ -33,27 +32,18 @@ public class ClientNode extends Thread{
         socket.send(packet);
     }
 
-    public void listener() throws IOException {
-        MulticastSocket mSocket = new MulticastSocket(5000);
-        InetAddress grupo = InetAddress.getByName("230.0.0.1");
-        mSocket.joinGroup(grupo);
-        byte[] entrada = new byte[1024];
-        DatagramPacket packet = new DatagramPacket(entrada, entrada.length);
-
-        while (true) {
-            System.out.println("Waiting");
-            mSocket.receive(packet);
-            System.out.println("received");
-            String recebido = new String(packet.getData(), 0, packet.getLength()); //@Todo aqui tambem
-            String [] message = recebido.split(";");
-            System.out.println("received: " + recebido + " from: " + packet.getSocketAddress());
-            String request = "";
-            if (MessageTypes.valueOf(message[0])==MessageTypes.ASK_CLOCK) {
-                request = MessageTypes.SEND_CLOCK + ";" +id + ";"+ clock.getTime().toString();
+    @Override
+    public void accept(Message receivedMessage) {
+        try {
+            String[] message = receivedMessage.getPayload().split(";");
+            if (MessageTypes.ASK_CLOCK.name().equals(message[0])) {
+                String request = MessageTypes.SEND_CLOCK + ";" + id + ";" + clock.getTime().toString();
                 byte[] msg = request.getBytes();
-                socket.send(new DatagramPacket(msg, msg.length, packet.getSocketAddress()));
+                Thread.sleep(networkDelay);
+                socket.send(new DatagramPacket(msg, msg.length, receivedMessage.getFrom(), receivedMessage.getPort()));
             }
+        } catch (Exception e) {
+            throw new RuntimeException(e);
         }
     }
-
 }

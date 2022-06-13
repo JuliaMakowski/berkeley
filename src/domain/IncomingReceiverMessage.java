@@ -6,7 +6,7 @@ import java.net.DatagramSocket;
 import java.util.Arrays;
 import java.util.function.Consumer;
 
-public class IncomingReceiverMessage extends Thread {
+public class IncomingReceiverMessage extends Listener {
 
     private Consumer<Message> handler;
     private DatagramSocket socket;
@@ -16,36 +16,16 @@ public class IncomingReceiverMessage extends Thread {
         this.socket = socket;
     }
 
-    public String removeNull(DatagramPacket packet){
-        byte[] data = packet.getData();
-        String s = new String(packet.getData(), packet.getOffset(), packet.getData().length);
-        int i = 0;
-        char[] c = s.toCharArray();
-        while (i < data.length) {
-            if (packet.getData()[i] != 0) {
-                break;
-            }
-            i++;
-        }
-        byte[] result;
-        if (i > 0 && i < data.length) {
-            result = Arrays.copyOfRange(data, i, data.length);
-        } else {
-            result = data;
-        }
-        return result.toString();
-    }
-
     @Override
-    public void run() {
+    protected void execute() {
         while (true) {
             try {
                 DatagramPacket packet = new DatagramPacket(new byte[1024], 1024);
                 System.out.println("Will wait");
                 socket.receive(packet);
                 String payload = removeNull(packet);
-                //String payload = new String(packet.getData(), packet.getOffset(), packet.getData().length);
-                handler.accept(new Message(packet.getSocketAddress(), payload));
+                System.out.println("received from unicast: " + payload + " from: " + packet.getSocketAddress());
+                handler.accept(new Message(packet.getAddress(), packet.getPort(), payload));
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }

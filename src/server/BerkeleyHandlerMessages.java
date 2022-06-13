@@ -22,10 +22,10 @@ public class BerkeleyHandlerMessages implements Consumer<Message> {
     private int nodesNumber;
     private long timeSent;
 
-    public BerkeleyHandlerMessages(DatagramSocket socket, int nodesNumber, Clock clock, int processTime) {
+    public BerkeleyHandlerMessages(DatagramSocket socket, int startNodesNumber, Clock clock, int processTime) {
         this.clockNodes = new HashMap<>();
         this.socket = socket;
-        this.nodesNumber = nodesNumber;
+        this.nodesNumber = startNodesNumber;
         this.clock = clock;
         this.timeSent = 0;
         this.processTime = processTime;
@@ -43,12 +43,13 @@ public class BerkeleyHandlerMessages implements Consumer<Message> {
     public void accept(Message message) {
         String payload = message.getPayload();
         String[] messageParts = payload.split(";");
+        System.out.println("Received message from process: " + messageParts[1] + " : " + payload);
         if (MessageTypes.SEND_CLOCK.name().equals(messageParts[0])) {
-            NodeReference reference = new NodeReference(message.getFrom(), messageParts[1]);
+            NodeReference reference = new NodeReference(message.getFrom(), message.getPort(), messageParts[1]);
             NodeReferenceTime referenceTime = new NodeReferenceTime(LocalTime.parse(messageParts[2]), clock.timeOnMs());
             clockNodes.put(reference, referenceTime);
         }
-        if (clockNodes.size() == nodesNumber) {
+        if (clockNodes.size() >= nodesNumber) {
             cleanMapAndExecute();
         }
     }
@@ -71,7 +72,7 @@ public class BerkeleyHandlerMessages implements Consumer<Message> {
                 .collect(Collectors.toMap(Map.Entry::getKey, e -> {
                     NodeReferenceTime referenceTime = e.getValue();
                     long difference = avgFiltered - getTimeOnMs(referenceTime.getNodeTime());
-                    long halfOfRtt = (currentTime - referenceTime.getReceivedTime()) / 2;
+                    long halfOfRtt = (timeSent - referenceTime.getReceivedTime()) / 2;
                     return difference + halfOfRtt + processTime;
                 }));
         try {
@@ -88,7 +89,8 @@ public class BerkeleyHandlerMessages implements Consumer<Message> {
             String operation = time < 0 ? "minus" : "plus";
             String msg = MessageTypes.FIX_CLOCK.name() + ";" + operation + ";" + Math.abs(time);
             byte[] byteMessage = msg.getBytes();
-            DatagramPacket packet = new DatagramPacket(byteMessage, byteMessage.length, nodeReference.getAddress());
+            System.out.println("Sending " + nodeReference.getId() + " message: " + msg);
+            DatagramPacket packet = new DatagramPacket(byteMessage, byteMessage.length, nodeReference.getAddress(), nodeReference.getPort());
             socket.send(packet);
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -96,7 +98,12 @@ public class BerkeleyHandlerMessages implements Consumer<Message> {
     }
 
     private void changeCurrent(long currentTime, long avgFiltered) {
-
+        long difference = avgFiltered - currentTime;
+        if (difference < 0) {
+            clock.decrease(Math.abs(difference));
+        } else {
+            clock.increase(Math.abs(difference));
+        }
     }
 
     private boolean is10SecondsApart(long average, Long time) {
@@ -107,18 +114,5 @@ public class BerkeleyHandlerMessages implements Consumer<Message> {
 
     private long getTimeOnMs(LocalTime time) {
         return time.toSecondOfDay() * 1000L + time.getNano() / 1000;
-    }
-
-    public static void main(String[] args) {
-        LocalTime now = LocalTime.now();
-        long ms = System.currentTimeMillis();
-        System.out.println(ms);
-        System.out.println(now.toString());
-        System.out.println(now.getHour());
-        System.out.println(now.getMinute());
-        System.out.println(now.getSecond());
-        System.out.println(now.getNano());
-
-        System.out.println(now.toSecondOfDay() * 1000 + now.getNano() / 1000);
     }
 }

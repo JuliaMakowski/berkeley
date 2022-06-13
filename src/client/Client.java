@@ -2,6 +2,7 @@ package client;
 
 import domain.Clock;
 import domain.IncomingReceiverMessage;
+import domain.MulticastGroupListener;
 
 import java.io.IOException;
 import java.net.DatagramSocket;
@@ -14,17 +15,18 @@ public class Client {
         String host = args[1];
         String port = args[2];
         String time = args[3];
-        String clocKDelay = args[4];
+        String clockDelay = args[4];
         String networkDelay = args[5];
 
         InetAddress address = InetAddress.getByName(host);
         DatagramSocket socket = new DatagramSocket(Integer.parseInt(port), address);
-        Clock clock = new Clock(Integer.parseInt(clocKDelay), LocalTime.parse(time));
+        Clock clock = new Clock(Integer.parseInt(clockDelay), LocalTime.parse(time));
         clock.start();
-        ClientNode clientNode = new ClientNode(socket, id, networkDelay, clock);
-        clientNode.connect();
+        ClientNode clientNode = new ClientNode(socket, id, Long.parseLong(networkDelay), clock);
         IncomingReceiverMessage incomingReceiverMessage = new IncomingReceiverMessage(socket, new ClientHandlerMessages(clock));
         incomingReceiverMessage.start();
-        clientNode.listener();
+        clientNode.connect();
+        MulticastGroupListener multicastGroupListener = new MulticastGroupListener(clientNode);
+        multicastGroupListener.start();
     }
 }
